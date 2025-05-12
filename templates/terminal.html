@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resizable Web IDE with Terminal Tabs</title>
+
+  <!-- Link to CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/terminal.css') }}"/>
+
+  <!-- Xterm.js & Ace Editor CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.41.0/ace.js"></script>
+</head>
+<body>
+  <div class="top-bar">
+    <h1>Web Terminal</h1>
+    <div class="actions">
+      <button onclick="resetLayout()">Reset Layout</button>
+      <a href="/"><button>Back to Home</button></a>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="sidebar" id="sidebar">
+      <div class="file-browser-header">
+        <h3>Files</h3>
+        <span class="file-menu-btn">⋮</span>
+        <div class="file-menu-dropdown hidden">
+          <div class="dropdown-item" data-action="new_file">New File</div>
+          <div class="dropdown-item" data-action="new_folder">New Folder</div>
+        </div>
+      </div>      
+      <ul>
+      </ul>
+    </div>
+
+    <div class="resize-handle-horizontal" id="resizeSidebar"></div>
+
+    <div class="editor-terminal-container">
+      <div class="mobile-tabs">
+        <button id="tabEditor" class="active">Editor</button>
+        <button id="tabTerminal">Terminal</button>
+      </div>      
+      <div id="editor"># Write your Docker commands or scripts here...</div>
+
+      <div class="resize-handle-vertical" id="resizeTerminal"></div>
+
+      <div class="terminal-section">
+        <div class="terminal-tabs" id="terminalTabs">
+          <!-- Tabs go here -->
+        </div>
+        <div id="terminalContainer"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const pathname = "{{ request.path.split('/')[-1] }}"
+  </script>
+  <!-- Link to JS -->
+  <script src="{{ url_for('static', filename='js/ace_filetypes.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/terminal.js') }}"></script>
+</body>
+</html>

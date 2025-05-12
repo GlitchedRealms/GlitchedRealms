@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Docker Device Manager</title>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      color: #ffffff;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, select, input {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      margin: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #6200ea;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:disabled {
+      background-color: #9e9e9e;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #3700b3;
+    }
+
+    select, input {
+      background-color: #333333;
+      color: white;
+      border: 1px solid #444444;
+    }
+
+    .container-card {
+      background-color: #1e1e1e;
+      border: 1px solid #444444;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .container-actions button {
+      margin: 5px 5px 0 0;
+    }
+
+    .loading {
+      font-style: italic;
+      color: #bbbbbb;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #ff5252;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.5s;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .form-section {
+      margin-bottom: 30px;
+    }
+
+    .form-section label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+
+    .form-section input, .form-section select {
+      width: 250px;
+    }
+
+    .form-buttons {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <h1>Docker Device Manager</h1>
+    {% if session['user_id'] %}
+      <div>
+        <button onclick="getContainers()">Refresh Devices</button>
+        <a href="{{ url_for('logout') }}"><button>Logout</button></a>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if not session['user_id'] %}
+    <h2>Please log in to continue</h2>
+    <form method="POST" action="{{ url_for('login') }}">
+      <label>User ID: <input type="text" name="username" required></label>
+      <button type="submit">Log in</button>
+    </form>
+  {% else %}
+    <div class="form-section">
+      <h2>Create Container</h2>
+      <label for="osImage">Select OS Template:</label>
+      <select id="osImage">
+        <option value="ubuntu">Ubuntu</option>
+        <option value="debian">Debian</option>
+        <option value="centos">CentOS</option>
+        <option value="alpine">Alpine</option>
+      </select>
+
+      <label for="containerName">Container Name:</label>
+      <input type="text" id="containerName" placeholder="Enter container name">
+
+      <div class="form-buttons">
+        <button id="createBtn" onclick="createContainer()">Create</button>
+      </div>
+    </div>
+  {% endif %}
+
+  <h2>Devices</h2>
+  <div id="deviceList" class="loading">Loading...</div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const socket = io(window.location.origin);
+    const toast = document.getElementById("toast");
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+
+    function disableAllButtons(state) {
+      document.querySelectorAll("button").forEach(btn => {
+        if (!btn.closest("a")) {
+          btn.disabled = state;
+        }
+      });
+    }
+
+    function getContainers() {
+      const containerDiv = document.getElementById("deviceList");
+      containerDiv.innerHTML = '<p class="loading">Loading...</p>';
+      socket.emit("request_devices", {}, (response) => {
+        if (response.result === "success") {
+          const devices = response.message;
+          if (devices.length === 0) {
+            containerDiv.innerHTML = "<p>No containers found.</p>";
+            return;
+          }
+          containerDiv.innerHTML = devices.map(device => `
+            <div class="container-card">
+              <strong>${device.name}</strong> (${device.image})<br>
+              Status: ${device.status}<br>
+              Created: ${device.created}<br>
+              Last Started: ${device.last_started || "N/A"}<br>
+              <div class="container-actions">
+                <button onclick="connectContainer('${device.name}')">Connect</button>
+                <button onclick="handleContainerAction('start_container', '${device.name}')">Start</button>
+                <button onclick="handleContainerAction('stop_container', '${device.name}')">Stop</button>
+                <button onclick="handleContainerAction('delete_container', '${device.name}', true)">Delete</button>
+              </div>
+            </div>
+          `).join("");
+        } else {
+          containerDiv.innerHTML = `<p>Error: ${response.message}</p>`;
+        }
+      });
+    }
+
+    function createContainer() {
+      const osImage = document.getElementById("osImage").value.trim();
+      const containerName = document.getElementById("containerName").value.trim();
+      if (!osImage || !containerName) {
+        showToast("Please enter both image and name.");
+        return;
+      }
+      disableAllButtons(true);
+      socket.emit("create_container", {
+        os_image: osImage,
+        container_name: containerName
+      }, (response) => {
+        showToast(response.message);
+        disableAllButtons(false);
+        getContainers();
+      });
+    }
+
+    function handleContainerAction(action, name, confirmDelete = false) {
+      if (confirmDelete && !confirm(`Are you sure you want to delete container "${name}"?`)) return;
+
+      disableAllButtons(true);
+      socket.emit(action, { container_name: name }, (response) => {
+        showToast(response.message);
+        disableAllButtons(false);
+        getContainers();
+      });
+    }
+
+    function connectContainer(name) {
+      window.location.href = `/terminal/${name}`;
+    }
+
+    window.onload = getContainers;
+  </script>
+</body>
+</html>
