@@ -83,8 +83,8 @@
 </head>
 <body>
   <div class="login-container">
-    <h2>Login to Your Account</h2>
-    <form action="/login" method="POST">
+    <h2>Sign up for an Account</h2>
+    <form action="/sign_up" method="POST">
       <label for="username">Username</label>
       <input type="text" id="username" name="username" required>
 
@@ -93,7 +93,7 @@
 
       <button type="submit">Login</button>
     </form>
-    <div class="new-acct"> Don't have an account? <a href="{{ url_for('sign_up')}}">Register today!</a></div>
+    <a href="{{url_for('login')}}">Want to log in?</a>
     <div class="footer">Docker Device Manager © 2025</div>
   </div>
 </body>
