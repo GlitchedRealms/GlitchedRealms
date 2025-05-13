@@ -50,7 +50,7 @@ def login():
                 session['user_id'] = user_id
                 return redirect(url_for('index'))
             except:
-                return "password incorrect"
+                return "Username or Password is incorrect"
 
         return redirect(url_for('index'))
 
