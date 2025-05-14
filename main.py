@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, request
+from flask import Flask, render_template, session, redirect, url_for, request, flash
 from flask_socketio import SocketIO, disconnect
 import os
 import pyrebase
@@ -69,7 +69,8 @@ def sign_up():
         try:
             auth.create_user_with_email_and_password(user_id, user_pwd)
         except Exception as e:
-            return f"something went wrong :(, please try again later. Here's the error: {e}"
+            flash(f"something went wrong :(")
+            return redirect(url_for("sign_up"))
 
         return redirect(url_for('login'))
 
@@ -84,4 +85,4 @@ def terminal(container_name):
     return render_template("terminal.html")
 
 
-sio.run(app, host="0.0.0.0", port=5000)
+sio.run(app, host="0.0.0.0", port=5000,debug=True)

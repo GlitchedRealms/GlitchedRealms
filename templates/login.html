@@ -83,6 +83,15 @@
 </head>
 <body>
   <div class="login-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
     <h2>Login to Your Account</h2>
     <form action="/login" method="POST">
       <label for="username">Username</label>
