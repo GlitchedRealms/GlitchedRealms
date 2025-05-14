@@ -89,7 +89,7 @@ class docker_manager:
 
             if container_name == "":
                 return self.return_result("error", "Container name cannot be empty.")
-            
+
             existing = self.find_container_by_logical_name(user_id, container_name)
             if existing:
                 return self.return_result("error", f"Container with name '{container_name}' already exists for user {user_id}.")
@@ -105,9 +105,13 @@ class docker_manager:
                     "container_name": container_name,
                     "uid": unique_id
                 },
-                tty=True
+                tty=True,
+
+                volumes = {
+                    '/docker_templates/java': {'bind': '/mnt/java', 'mode': 'ro'},
+                }
             )
-            
+
             self.ensure_user_in_container(container, user_id)
 
             return self.return_result("success", f"Container '{container_name}' created for user {user_id}.")
