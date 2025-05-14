@@ -108,7 +108,8 @@ class docker_manager:
                 tty=True,
 
                 volumes = {
-                    '/docker_templates/java': {'bind': '/mnt/java', 'mode': 'ro'},
+                    ## TODO: Replace this with a reference to environment variables
+                    '/home/kram/projects/GlitchedRealms/docker_templates/java': {'bind': '/mnt/java', 'mode': 'ro'},
                 }
             )
 
