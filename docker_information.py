@@ -96,7 +96,7 @@ class docker_manager:
                 return self.return_result("error", f"Container with name '{container_name}' already exists for user {user_id}.")
 
             unique_id = str(uuid.uuid4())
-            docker_name = f"{unique_id}"
+            docker_name = f"user_{user_id}_{unique_id}"
             container = self.client.containers.run(
                 image=os_image,
                 name=docker_name,
@@ -118,6 +118,7 @@ class docker_manager:
             #container.exec_run(f"sh /mnt/java/startup.sh", privileged=True)
 
             self.ensure_user_in_container(container, user_id)
+            self.rebalace_all_containers(user_id)
 
             return self.return_result("success", f"Container '{container_name}' created for user {user_id}.")
         except docker.errors.ImageNotFound:
@@ -163,6 +164,7 @@ class docker_manager:
             container.reload()
             if container.status != "running":
                 container.start()
+                self.rebalace_all_containers(user_id)
                 return self.return_result("success", f"Started container: {container_name}")
             else:
                 return self.return_result("success", f"Container {container_name} is already running.")
@@ -178,6 +180,7 @@ class docker_manager:
             container.reload()
             if container.status == "running":
                 container.stop()
+                self.rebalace_all_containers(user_id)
                 return self.return_result("success", f"Stopped container: {container_name}")
             else:
                 return self.return_result("success", f"Container {container_name} is already stopped.")
@@ -190,6 +193,7 @@ class docker_manager:
             if not container:
                 return self.return_result("error", f"Container '{container_name}' not found.")
             container.remove(force=True)
+            self.rebalace_all_containers(user_id)
             return self.return_result("success", f"Container '{container_name}' deleted.")
         except Exception as e:
             return self.return_result("error", str(e))
