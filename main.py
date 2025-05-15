@@ -60,7 +60,8 @@ def login():
 
                 ## Sign in and store status in cookies
                 user = auth.sign_in_with_email_and_password(user_id, user_pwd)
-                session['user_id'] = user_id
+                #print([user])
+                session['user_id'] = user['localId']
                 return redirect(url_for('index'))
             except:
                 flash(f"Password incorrect")
