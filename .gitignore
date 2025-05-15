@@ -1,3 +1,4 @@
-venv/
+__pycache__
+venv
+docker_templates/
 .env
-__pycache__/

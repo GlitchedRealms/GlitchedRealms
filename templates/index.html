@@ -135,6 +135,15 @@
         <option value="centos">CentOS</option>
         <option value="alpine">Alpine</option>
       </select>
+    </div>
+
+    <div class="form-section">
+      <h2>Choose template</h2>
+      <label for="template">Select OS Template:</label>
+      <select id="template">
+        <option value="java">Java</option>
+        <option value="python">Python</option>
+      </select>
 
       <label for="containerName">Container Name:</label>
       <input type="text" id="containerName" placeholder="Enter container name">
@@ -143,6 +152,7 @@
         <button id="createBtn" onclick="createContainer()">Create</button>
       </div>
     </div>
+
   {% endif %}
 
   <h2>Devices</h2>
@@ -200,16 +210,18 @@
 
     function createContainer() {
       const osImage = document.getElementById("osImage").value.trim();
+      const templateType = document.getElementById("template").value.trim();
       const containerName = document.getElementById("containerName").value.trim();
-      if (!osImage || !containerName) {
-        showToast("Please enter both image and name.");
+      if (!osImage || !containerName || !template) {
+        showToast("Please enter image, name, and template type");
         return;
       }
       disableAllButtons(true);
       socket.emit("create_container", {
         os_image: osImage,
-        container_name: containerName
-      }, (response) => {
+        template_type: templateType,
+        container_name: containerName,
+        }, (response) => {
         showToast(response.message);
         disableAllButtons(false);
         getContainers();

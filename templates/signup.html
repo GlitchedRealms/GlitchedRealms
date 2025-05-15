@@ -10,7 +10,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #121212;
       color: #ffffff;
-      display: flex;
+      /*display: flex;*/
       justify-content: center;
       align-items: center;
       height: 100vh;
@@ -23,9 +23,14 @@
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
       width: 100%;
       max-width: 400px;
+      margin: 0 auto;
+      top: 100 px;
+      postition: absolute;
     }
 
     .login-container h2 {
+      margin:auto;
+      width:50%
       text-align: center;
       margin-bottom: 30px;
       color: #ffffff;
@@ -79,11 +84,43 @@
       color: #999;
     }
 
+    .container button {
+      margin-top: 0px;
+    }
+
+    .container{
+      margin: 0 auto;
+      margin-top:0px;
+      clear:both;
+      width:auto;
+    }
+    .close{
+      display:inline;
+      width:10%;
+      height:100%;
+    }
+
+    .other{
+      padding-top:10px;
+      color:white;
+    }
+
   </style>
 </head>
 <body>
+    <div class="container">
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+
+
+  <br>
   <div class="login-container">
-    <h2>Sign up for an Account</h2>
+    <center><h2>Sign up for an Account</h2></center>
     <form action="/sign_up" method="POST">
       <label for="username">Username</label>
       <input type="text" id="username" name="username" required>
@@ -93,7 +130,7 @@
 
       <button type="submit">Login</button>
     </form>
-    <a href="{{url_for('login')}}">Want to log in?</a>
+    <a class="other" href="{{url_for('login')}}">Want to log in?</a>
     <div class="footer">Docker Device Manager © 2025</div>
   </div>
 </body>

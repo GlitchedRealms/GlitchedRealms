@@ -75,21 +75,22 @@ class docker_manager:
         self.rebalance_user_container_memory(user_id, only_running)
         self.rebalance_user_container_cpu(user_id, only_running)
 
-    def create_container(self, os_image: str, user_id: str, container_name: str):
+    def create_container(self, os_image: str, user_id: str, container_name: str, template_type: str):
         try:
             # Ensure user doesn't already have a container with this logical name
             container_name = bleach.clean(container_name)
             os_image = bleach.clean(os_image)
+            template_type = bleach.clean(template_type)
 
             if self.contains_invalid_chars(container_name):
                 return self.return_result("error", "Name must only contain letters, numbers, dashes, and underscores.")
 
             if os_image not in ["ubuntu", "debian", "centos", "alpine"]:
-                return self.return_result("error", f"Invalid OS image '{os_image}'. Supported images are: Ubuntu, Debian, CentOS, Alpine.")
+                return self.return_result("error", f"Invalid OS image '{os_image}'.")
 
             if container_name == "":
                 return self.return_result("error", "Container name cannot be empty.")
-            
+
             existing = self.find_container_by_logical_name(user_id, container_name)
             if existing:
                 return self.return_result("error", f"Container with name '{container_name}' already exists for user {user_id}.")
@@ -105,9 +106,17 @@ class docker_manager:
                     "container_name": container_name,
                     "uid": unique_id
                 },
-                tty=True
+                tty=True,
+
+                volumes = {
+                    ## TODO: Replace this with a reference to environment variables
+                    f'/home/kram/projects/GlitchedRealms/docker_templates/{template_type}': {'bind': f'/mnt/{template_type}', 'mode': 'ro'},
+                    #f'/home/kram/projects/GlitchedRealms/docker_templates/java': {'bind': f'/mnt/java', 'mode': 'ro'},
+                }
             )
-            
+            container.exec_run(f"sh /mnt/{template_type}/startup.sh", privileged=True)
+            #container.exec_run(f"sh /mnt/java/startup.sh", privileged=True)
+
             self.ensure_user_in_container(container, user_id)
             self.rebalace_all_containers(user_id)
 

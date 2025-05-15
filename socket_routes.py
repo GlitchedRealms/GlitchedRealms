@@ -36,7 +36,8 @@ def register_socket_routes(socketio, docker_mgr):
         return docker_mgr.create_container(
             data.get("os_image"),
             user_id,
-            data.get("container_name")
+            data.get("container_name"),
+            data.get("template_type"),
         )
 
     @socketio.on("start_container")
