@@ -4,6 +4,7 @@ from datetime import datetime
 import bleach
 import re
 import io
+import os
 import tarfile
 import magic
 
@@ -110,7 +111,7 @@ class docker_manager:
 
                 volumes = {
                     ## TODO: Replace this with a reference to environment variables
-                    f'/home/kram/projects/GlitchedRealms/docker_templates/{template_type}': {'bind': f'/mnt/{template_type}', 'mode': 'ro'},
+                    f'{os.getenv("DOCKER_TEMPLATES")}/{template_type}': {'bind': f'/mnt/{template_type}', 'mode': 'ro'},
                     #f'/home/kram/projects/GlitchedRealms/docker_templates/java': {'bind': f'/mnt/java', 'mode': 'ro'},
                 }
             )

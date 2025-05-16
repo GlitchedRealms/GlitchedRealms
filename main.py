@@ -67,8 +67,6 @@ def login():
                 flash(f"Password incorrect")
                 return redirect(url_for('login'))
 
-                return "Username or Password is incorrect"
-
 ## Logout of app by removing username signed in status
 @app.route('/logout')
 def logout():
