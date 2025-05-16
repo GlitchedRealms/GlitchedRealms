@@ -22,6 +22,12 @@ function createTerminalInstance(id) {
   const term = new Terminal({ theme: { background: "#000", foreground: "#fff" }, fontSize: 14 });
   term.open(instance);
 
+  socket.emit("terminal_input", {
+    container_name: pathname,
+    tab_id: id,
+    input: "clear\n",
+  });
+
   term.onData(data => {
     socket.emit("terminal_input", {
       container_name: pathname,
